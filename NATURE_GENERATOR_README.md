@@ -20,6 +20,7 @@ The batch export writes 60-second, mono, 16 kHz PCM16 WAV files, a JSON manifest
 - The ESC-50 metadata contained 200 selected clips, 40 per class, and 145 distinct source identifiers; no identifier crossed the dataset folds. Metadata checks do not establish absence of near duplicates or pretraining leakage.
 - All 200 original WAV files were read: all were mono 44.1 kHz PCM16 and five seconds long. All file hashes were unique. Thirty-three contained at least one sample at or above 0.999 full scale; that flags review and does not prove audible clipping. No file had overall RMS below 0.001. These checks do not establish perceptual quality.
 - Four signal-processing tests passed using synthetic test fixtures, including a WAV round trip. No generated audio is implied by those tests.
+- AudioLDM2Pipeline imported with Diffusers 0.30.2, Transformers 4.44.2, and huggingface-hub 0.25.2. PyTorch 2.15.0 reported CUDA and MPS unavailable in this environment. An offline model-load attempt failed with `LocalEntryNotFoundError` because the pinned checkpoint was not cached. The full checkpoint was not downloaded or run locally.
 - Local real model inference, generated WAVs, perceptual listening, and fine-tuning are not verified. The host has an Apple GPU but no CUDA GPU; pretrained weights were not available locally. Dependency and model downloads are required. The Colab workflow is provided for that execution and has not been verified end to end here.
 
 ## Licensing and model choice
