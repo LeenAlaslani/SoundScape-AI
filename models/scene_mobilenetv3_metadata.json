@@ -1,0 +1,22 @@
+{
+  "classes": [
+    "buildings",
+    "forest",
+    "glacier",
+    "mountain",
+    "sea",
+    "street"
+  ],
+  "temperature": 1.3409977859837439,
+  "accept_threshold": 0.0,
+  "vision_to_scene": {
+    "buildings": "unknown",
+    "forest": "forest",
+    "glacier": "mountain",
+    "mountain": "mountain",
+    "sea": "coast",
+    "street": "unknown"
+  },
+  "version": "soundscape-cv-1.0",
+  "training_phase": "finetune"
+}
