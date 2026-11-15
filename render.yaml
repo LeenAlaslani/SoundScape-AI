@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: soundscape-ai-studio
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements-cloud.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.11
+      - key: SOUNDSCAPE_ENABLE_GPU_AUDIO
+        value: "0"

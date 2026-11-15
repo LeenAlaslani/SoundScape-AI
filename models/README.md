@@ -1,0 +1,1 @@
+Place **scene_mobilenetv3.pt** from the *executed* final Colab notebook here. Restart FastAPI after copying. Do not commit weights if you cannot redistribute their source data/checkpoint under applicable terms.

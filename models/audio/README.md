@@ -1,0 +1,1 @@
+Place the teammate's actual `lora_adapters.pt` (exported from SoundScape_AI_Project(1).ipynb, Section 17) here. The source .ipynb does not contain this file. Do NOT put screenshots, audio clips or random .pt files here.

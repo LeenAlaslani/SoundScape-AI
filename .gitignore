@@ -1,0 +1,7 @@
+__pycache__/
+.ipynb_checkpoints/
+.venv/
+.pytest_cache/
+*.pyc
+models/*.pt
+!assets/audio/README.md
