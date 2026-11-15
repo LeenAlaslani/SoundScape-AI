@@ -82,7 +82,7 @@ $('mixBtn').addEventListener('click',async()=>{
 });
 async function initialize(){renderLevels();try{const data=await(await api('status')).json();visionEnabled=String(data.vision).includes('ready');if(!visionEnabled){$('analyzeBtn').disabled=true;$('analyzeBtn').title='Add your trained model export to enable scene analysis.';$('analysisResult').textContent='Photo upload preview and manual scene selection work now. CV predictions become available after adding the trained model export.';} $('connection').innerHTML='<span class="connection-dot"></span> '+(data.available_layers.length?data.available_layers.length+' nature sounds ready':'Vision studio online');if(data.available_layers.length){updateStatus('Ready: '+data.available_layers.length+' original generated audio layers and two fine-tuned comparison sets.')}else{updateStatus('Vision and prompt tools ready. The audio generation model and WAV exports are not connected yet.')}}catch{$('connection').textContent='API connection unavailable';updateStatus('Open via the FastAPI server rather than the HTML file directly.',true)}}
 initialize();
-initializeSoundLibrary();
+// Sound library is initialized after layerCards declaration (avoid temporal dead zone).
 
 
 // Real WAV outputs reconstructed directly from the executed teammate notebook.
@@ -150,12 +150,13 @@ const previousInitialize=initialize;
     const g=d.generation||{};
     $('generateBtn').disabled=!g.available;
     if(g.available){
-      $('generationHint').textContent=g.adapter_checkpoint_present?'GPU ready. Original, Intensity and Comfort can generate fresh recordings.':'GPU ready for original-model inference only. Export lora_adapters.pt to models/audio/ for the two trained variants.';
-      $('soundAvailability').textContent='5 WAV LAYERS · GPU AVAILABLE';
+      $('generationHint').textContent=g.space_configured?'External GPU Space configured. It may queue requests, fail or reach daily limits; click Generate to test actual availability.':(g.adapter_checkpoint_present?'GPU ready; adapters available.':'GPU ready for original-model inference only.');
+      $('soundAvailability').textContent=g.space_configured?'5 WAV LAYERS · REMOTE GPU CONFIGURED':'5 WAV LAYERS · LOCAL GPU';
     }else{
       $('generationHint').textContent='GPU generation is not connected in this runtime. Play and mix all five real WAV layers and compare the LoRA samples above. To enable new generation, see RUN_GPU.md.';
       $('soundAvailability').textContent='5 WAV LAYERS READY';
     }
-    for(const option of $('adapterSelect').options){if(option.value!=='original')option.disabled=!g.adapter_checkpoint_present}
+    for(const option of $('adapterSelect').options){option.disabled=!((g.available_models||['original']).includes(option.value))}
   }catch(err){$('generationHint').textContent='Could not check GPU model availability.'}
 })();
+initializeSoundLibrary();

@@ -11,6 +11,7 @@ from app.vision import analyze, model_status, VisionNotConfigured
 from app.prompting import SoundSettings, build_prompt
 from app.audio import mix_layers, available_layers
 from app.audio_generation import generation_status, generate_wav
+from app.remote_gpu import remote_status, remote_space_id, generate_remote_wav
 
 app = FastAPI(title='SoundScape AI — Vision Guided Sound', version='0.3.0')
 FRONTEND = Path(__file__).resolve().parents[1] / 'frontend'
@@ -21,7 +22,7 @@ def status():
         'vision': model_status(),
         'audio': 'generated_library_ready' if available_layers() else 'generated_library_missing',
         'available_layers': available_layers(),
-        'generation': generation_status(),
+        'generation': remote_status() if remote_space_id() else generation_status(),
         'comparison_prompts': ['heavy_rain','rain_nice_sound'],
     }
 
@@ -94,10 +95,11 @@ class GenerateSettings(BaseModel):
 
 @app.post('/api/generate')
 def generate_audio(request: GenerateSettings):
-    if not generation_status()['available']:
-        raise HTTPException(503,'Live generation requires a CUDA GPU and the optional AudioLDM 2 environment. The pre-generated audio library works without them.')
+    if not remote_space_id() and not generation_status()['available']:
+        raise HTTPException(503,'Live generation requires a connected GPU service. Saved audio layers and mixing still work.')
     try:
-        wav=generate_wav(request.prompt,request.adapter,request.seconds,request.seed)
+        wav=(generate_remote_wav(request.prompt,request.adapter,request.seconds,request.seed)
+             if remote_space_id() else generate_wav(request.prompt,request.adapter,request.seconds,request.seed))
         return Response(content=wav,media_type='audio/wav',headers={'Content-Disposition':'attachment; filename="soundscape_generated.wav"','Cache-Control':'no-store'})
     except (RuntimeError, ValueError) as exc:
         raise HTTPException(503,str(exc)) from exc
