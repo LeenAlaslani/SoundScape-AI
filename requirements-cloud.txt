@@ -1,0 +1,10 @@
+# Lightweight CPU web app: stored generated WAVs, prompt composition, mixing, and optional ONNX scene classifier.
+# No PyTorch, Transformers, Diffusers, or GPU environment on the web server.
+fastapi>=0.115,<1
+uvicorn>=0.30,<1
+python-multipart>=0.0.12,<1
+pillow>=10.4,<13
+numpy>=1.26,<3
+scipy>=1.12,<2
+soundfile>=0.12,<1
+onnxruntime>=1.19,<2
