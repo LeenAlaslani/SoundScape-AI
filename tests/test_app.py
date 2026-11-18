@@ -32,6 +32,32 @@ def test_weather_is_a_user_preference_and_comfort_changes_request():
     assert gentle['prompt'] != natural['prompt']
     assert client.post('/api/compose',json={**base,'weather':'hail'}).status_code == 422
 
+def test_multi_layer_prompt_preserves_scene_weather_and_preset():
+    payload={'scene':'coast','weather':'rain','levels':{'rain':60,'sea_waves':40},
+             'preset':'sleep','comfort_mode':True,'sound':'rain'}
+    result=client.post('/api/compose',json=payload)
+    assert result.status_code==200
+    prompt=result.json()['prompt']
+    for word in ['rain','waves','coast','sleep']:
+        assert word in prompt
+    assert 'listener imagines rain' in prompt
+    assert len(prompt)<=400
+    assert client.post('/api/compose',json={**payload,'levels':{'rain':0}}).status_code==422
+    all_layers={name:50 for name in ('rain','sea_waves','wind','pouring_water','thunderstorm')}
+    longest=client.post('/api/compose',json={**payload,'scene':'waterfall','levels':all_layers}).json()['prompt']
+    assert len(longest)<=400
+
+def test_real_layer_mixes_follow_levels():
+    rain=client.post('/api/mix',json={'seconds':5,'levels':{'rain':60}})
+    wind=client.post('/api/mix',json={'seconds':5,'levels':{'wind':60}})
+    combined=client.post('/api/mix',json={'seconds':5,'levels':{'rain':60,'sea_waves':40}})
+    assert rain.status_code==wind.status_code==combined.status_code==200
+    r,sr=sf.read(BytesIO(rain.content),dtype='float32')
+    w,_=sf.read(BytesIO(wind.content),dtype='float32')
+    c,_=sf.read(BytesIO(combined.content),dtype='float32')
+    assert sr==16000 and len(r)==len(w)==len(c)==80000
+    assert not np.allclose(r,w) and not np.allclose(r,c)
+
 def test_image_validation():
     r = client.post('/api/analyze',files={'image':('bad.txt',b'not image','text/plain')})
     assert r.status_code == 415

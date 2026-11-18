@@ -1,0 +1,6 @@
+.player-controls { flex-wrap: wrap; justify-content: flex-end; }
+.preview-button { background: #345d47; border: 0; border-radius: 4px; color: white; padding: 12px 15px; font-size: 12px; font-weight: 700; }
+.volume-control { display: flex; align-items: center; gap: 8px; font-size: 11px; color: #526b5d; }
+.volume-control input { width: 90px; accent-color: #739b7d; }
+button.download { border: 0; background: transparent; padding: 8px; cursor: pointer; }
+@media (max-width: 680px) { .player-controls { justify-content: flex-start; } }

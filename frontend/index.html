@@ -6,7 +6,8 @@
   <meta name="theme-color" content="#f5f7f4">
   <title>SoundScape AI | Your moment of calm</title>
   <link rel="stylesheet" href="/static/styles.css?v=3">
-  <script src="/static/app.js?v=3" defer></script>
+  <link rel="stylesheet" href="/static/mixer.css?v=1">
+  <script src="/static/app.js?v=4" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -44,10 +45,10 @@
       </section>
     </div>
 
-    <section class="player-section" aria-labelledby="player-title"><div class="player-copy"><span class="player-icon" aria-hidden="true">♫</span><div><span class="mini-label">YOUR SOUNDSCAPE</span><h2 id="player-title">A moment just for you.</h2><p id="previewOrigin">Your soundscape will appear here.</p></div></div><div class="player-controls"><audio id="soundPlayer" controls preload="metadata" aria-label="Soundscape player"></audio><a id="downloadSound" class="download" hidden download="soundscape.wav">Download WAV ↓</a></div></section>
+    <section class="player-section" aria-labelledby="player-title"><div class="player-copy"><span class="player-icon" aria-hidden="true">♫</span><div><span class="mini-label">YOUR SOUNDSCAPE</span><h2 id="player-title">A moment just for you.</h2><p id="previewOrigin">Preview your chosen layers or generate a new recording.</p></div></div><div class="player-controls"><button id="previewPlay" class="preview-button" type="button" aria-pressed="false">▶ Play live mix</button><label class="volume-control">Volume <input id="previewVolume" type="range" min="0" max="100" value="70" aria-label="Preview volume"></label><audio id="soundPlayer" controls preload="metadata" aria-label="Generated soundscape player" hidden></audio><button id="downloadMix" class="download" type="button">Download mix ↓</button><a id="downloadSound" class="download" hidden download="soundscape.wav">Download generated WAV ↓</a></div></section>
     <p id="statusMessage" class="status" role="status" aria-live="polite">Ready when you are.</p>
 
-    <details id="research" class="research"><summary>Model lab <span>＋</span></summary><div class="research-content"><p>Compare saved outputs from the original AudioLDM 2 model and Athir’s experimental LoRA adapters. These are earlier recordings, not new generations.</p><label for="comparisonSelect">Comparison prompt</label><select id="comparisonSelect"><option value="heavy_rain">Heavy and strong rain</option><option value="rain_nice_sound">Rain nice sound</option></select><div id="comparisonPlayers" class="comparisons"></div><label for="adapterSelect">Model for new generation</label><select id="adapterSelect"><option value="original">Original AudioLDM 2</option><option value="intensity" disabled>Intensity LoRA</option><option value="comfort" disabled>Comfort LoRA</option></select><p>Lower model loss does not establish better listening quality. Weather recognition and new generation require separately available models.</p></div></details>
+    <details id="research" class="research"><summary>Model lab <span>＋</span></summary><div class="research-content"><p>Current audio request: <span id="promptDescription">Preparing prompt…</span></p><p>Compare saved outputs from the original AudioLDM 2 model and Athir’s experimental LoRA adapters. These are earlier recordings, not new generations.</p><label for="comparisonSelect">Comparison prompt</label><select id="comparisonSelect"><option value="heavy_rain">Heavy and strong rain</option><option value="rain_nice_sound">Rain nice sound</option></select><div id="comparisonPlayers" class="comparisons"></div><label for="adapterSelect">Model for new generation</label><select id="adapterSelect"><option value="original">Original AudioLDM 2</option><option value="intensity" disabled>Intensity LoRA</option><option value="comfort" disabled>Comfort LoRA</option></select><p>Lower model loss does not establish better listening quality. Weather recognition and new generation require separately available models.</p></div></details>
   </main>
   <footer><span>soundscape AI <span aria-hidden="true">✳</span></span><span>Made for moments of quiet.</span></footer>
 </body>
