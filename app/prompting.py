@@ -12,6 +12,7 @@ class SoundSettings(BaseModel):
     sound: Literal['rain', 'sea_waves', 'wind', 'pouring_water', 'thunderstorm'] = 'rain'
     intensity: Intensity = 'gentle'
     comfort_mode: bool = True
+    weather: Literal['none', 'rain', 'snow', 'fog', 'wind'] = 'none'
     seconds: int = Field(default=10, ge=5, le=30)
 
 SCENES = {
@@ -41,7 +42,8 @@ def build_prompt(settings: SoundSettings) -> dict:
         'strong': 'full and clearly audible',
     }[settings.intensity]
     style = 'Smooth relaxing ambience, no sudden loud events.' if settings.comfort_mode else 'Natural dynamic environmental ambience.'
-    prompt = f'The natural sound of {event} in {environment}. {strength.capitalize()} acoustic texture. {style} High-fidelity field recording quality, no music, no speech.'
+    weather = '' if settings.weather == 'none' else f' The listener imagines {settings.weather} in the scene.'
+    prompt = f'The natural sound of {event} in {environment}.{weather} {strength.capitalize()} acoustic texture. {style} High-fidelity field recording quality, no music, no speech.'
     return {
         'prompt': prompt,
         'negative_prompt': 'speech, voices, music, engines, traffic, distortion, harsh clicks, digital artifacts',

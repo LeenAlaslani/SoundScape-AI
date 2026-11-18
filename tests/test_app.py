@@ -24,6 +24,14 @@ def test_compose():
 def test_bad_compose():
     assert client.post('/api/compose',json={'scene':'no-such-place'}).status_code == 422
 
+def test_weather_is_a_user_preference_and_comfort_changes_request():
+    base={'scene':'forest','sound':'rain','weather':'fog'}
+    gentle=client.post('/api/compose',json={**base,'comfort_mode':True}).json()
+    natural=client.post('/api/compose',json={**base,'comfort_mode':False}).json()
+    assert 'listener imagines fog' in gentle['prompt']
+    assert gentle['prompt'] != natural['prompt']
+    assert client.post('/api/compose',json={**base,'weather':'hail'}).status_code == 422
+
 def test_image_validation():
     r = client.post('/api/analyze',files={'image':('bad.txt',b'not image','text/plain')})
     assert r.status_code == 415

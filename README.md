@@ -1,59 +1,68 @@
-# Cloud deployment
+# SoundScape AI
 
-**See [DEPLOY_RENDER.md](DEPLOY_RENDER.md)** for publishing the existing sound studio on Render with no rented GPU.
+**A vision-guided studio for personalized, ASMR-inspired nature soundscapes.**
 
-# SoundScape AI — Vision × Nature Audio Studio
+Upload a scene, shape its atmosphere, and listen to a soundscape made for your moment. SoundScape is an experimental multimodal system combining computer vision, text-to-audio diffusion and audio processing; it is not a single vision-language model or a medical treatment.
 
-An integrated, simple web studio to **upload a photo, analyze its nature scene, suggest an audio prompt, listen to real generated nature sounds, compare two fine-tuned adapters, and mix or download WAVs**. The optional CUDA server can also generate **new audio** from a prompt once the actual model checkpoints are supplied.
+[Open the live studio](https://soundscape-ai-studio.onrender.com) · [Research and listening protocol](docs/research/relaxation_soundscape_research.md) · [V2 experiment report](SoundScape_V2_Report.md)
 
-## What is already real and usable now
+![SoundScape studio on desktop, showing a forest scene and a playable saved-layer preview](docs/images/studio-desktop.png)
 
-- Five actual **60-second AudioLDM 2 WAVs** (`rain`, `sea_waves`, `wind`, `pouring_water`, `thunderstorm`), reconstructed directly from Section 9 of Athir's executed Colab notebook. Each loop uses a generated 10-second seed audio segment; it is *not* 60 seconds of independently generated diffusion output.
-- Six actual **10-second LoRA A/B audio recordings** from the notebook's prompt tests: two prompts (`heavy and strong rain`, `rain nice sound`) × the Original, Intensity, Comfort models. These are *previously generated examples*; playback does not run the model.
-- Functional Web UI, prompt builder, audio preview, server-side mixing, download of mixed audio, upload and analysis route for user photos, and a model availability indicator.
-- Ready-to-connect cloud CPU image classification (`models/scene_mobilenetv3.onnx` + metadata, exported from `models/scene_mobilenetv3.pt`) and ready-to-connect live AudioLDM2 + LoRA pipeline (`models/audio/lora_adapters.pt`), with **honest gating** if the checkpoints/GPU are absent.
+*Screenshot captured from the locally running application with the sample image and saved-layer preview. [Mobile view](docs/images/studio-mobile.png).*
 
-## Start the studio (Mac / Windows / Linux)
+## Create a soundscape
 
-From a terminal in this folder:
+1. Upload a nature photo or use the sample. The trained scene model suggests a scene; you can correct it.
+2. Choose Relax, Sleep, Focus or Nature, then adjust the rain, waves, wind, water and thunder layers. Weather is a user choice; the current model does not recognize weather.
+3. Create and play a soundscape, then download its WAV. With no GPU service connected, the result is explicitly labeled as a mix of saved audio, not new model inference.
+
+Comfort mode reduces preview gain and adds softer language to a new-generation prompt. Its perceptual effect has not been validated. Presets express listening preferences; they are not clinical claims. The Model Lab contains previously generated original and LoRA comparisons.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    I["Uploaded image"] --> V["MobileNetV3 scene classifier"]
+    V --> P["Scene + listener preferences"]
+    W["Optional user-selected weather"] --> P
+    P --> T["Audio prompt"]
+    T --> G["Optional GPU: AudioLDM 2 + adapters"]
+    G --> A["New generated WAV"]
+    P --> M["Saved-layer mixer"]
+    M --> B["Labeled preview WAV"]
+    A --> O["Listen and download"]
+    B --> O
+```
+
+The public Render web service runs CPU scene inference and serves saved WAVs. An optional separately hosted GPU service can receive a prompt; configuration alone does not establish that it is live. The model generates one main sound; layer sliders control the saved-layer mix. The image model does not infer weather or prove that a sound is present.
+
+## Evidence and model status
+
+Athir's [original notebook](notebooks/SoundScape_AI_Project_original.ipynb) is preserved byte-for-byte, including its 93 cells, comments, saved outputs and Intensity/Comfort LoRA experiments. The [V2 notebook](notebooks/SoundScape_AI_Project_V2.ipynb) appends matched-seed comparisons, train-only proxy thresholds, an optional diagnostic adapter experiment and distinct-segment long-form workflow. These additions have not been executed on a GPU.
+
+The original experiment used 200 ESC-50 recordings in five classes with source-disjoint folds. It records two 150-step LoRA runs; lower denoising loss does not establish listening quality. For a one-seed intensity proxy, both baseline and adapter matched the expected direction in 4/5 classes. Comfort labels were inferred from acoustic proxies, not human judgments. No production model is selected as perceptually superior.
+
+The five [saved 60-second WAV layers](assets/audio/) repeat shorter generated material. Six [original versus LoRA examples](assets/audio/comparisons/) are from the teammate's executed notebook. The [measurement report](docs/results/saved_audio_metrics.csv) contains integrated LUFS and four-times-oversampled peak estimates for these real files; measurements do not establish relaxation, realism, or certified true peak. No V2 listening ratings or fresh generation results are claimed.
+
+## Run locally
 
 ```bash
-python -m pip install -r requirements.txt
+python -m pip install -r requirements-cloud.txt
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
-Then open http://127.0.0.1:8000 in your browser. **Do not open `frontend/index.html` by itself**; it relies on the FastAPI backend. Mac users can double-click `start_mac.command` after granting execution permission, or run `bash start_mac.command`.
-
-First try **Listen to the nature**: all five players should work immediately. Then compare the original and fine-tuned audio recordings, and press **Mix available WAV layers**. A forest example image is supplied. On the CPU cloud build, scene understanding uses an exported ONNX checkpoint if one is installed; otherwise choose the scene manually.
-
-## Enable live AI generation and your trained vision model
-
-**See [RUN_GPU.md](RUN_GPU.md).** Get `lora_adapters.pt` from Athir's Colab Section 17; it is **not embedded in the shared notebook**. Get `scene_mobilenetv3.pt` from your own Colab export for trained CV predictions. Then run the app with a CUDA GPU and the extra audio dependencies. A Colab launcher notebook is included.
-
-## Important interpretation
-
-The audio LoRA training is real, but the shared quantitative results **do not yet prove better audible intensity control or comfort**. The original and both adapters are available for controlled listening tests. Image classification based only on scene labels cannot prove that rain, wind or thunder actually occurs in a still picture.
-
-## File layout
-
-- `app/`: FastAPI endpoints, scene analysis, audio prompt builder, real audio WAV mixing, optional lazy AudioLDM2 + LoRA GPU inference.
-- `frontend/`: responsive web studio, comparisons, generated audio controls, example forest image.
-- `assets/audio/*.wav`: genuine 60-second export files from Athir's notebook.
-- `assets/audio/comparisons/`: real original-vs-LoRA notebook samples; filenames map to known prompts.
-- `models/`: checkpoint destinations for vision and audio.
-- `notebooks/`: CV full training notebook and optional Colab web launcher.
-- `tests/`: API, sample WAV integrity, mixing, checkpoint wrapper test.
-- `AUDIO_NOTEBOOK_FINDINGS.md`: research review and adapter results.
-- `RUN_GPU.md`: checkpoint retrieval and live audio inference instructions.
-
-## Tests
+Open [localhost:8000](http://127.0.0.1:8000). The app requires FastAPI and cannot be opened as a standalone HTML file. For a CUDA environment and the separately exported LoRA weights, see [RUN_GPU.md](RUN_GPU.md) and [CONNECT_CV_AND_GPU.md](CONNECT_CV_AND_GPU.md). Never commit credentials or model weights. Optional measurements require `pip install pyloudnorm` and `python scripts/evaluate_saved_audio.py`.
 
 ```bash
 python -m pip install pytest httpx
-python -m pytest -q tests
+python -m pytest -q tests/test_audio_quality.py tests/test_audio_playback.py tests/test_app.py tests/test_cloud_vision.py tests/test_remote_gpu.py
 node --check frontend/app.js
 ```
 
-## Limits / rights
+## Research, rights and limitations
 
-The AudioLDM2 checkpoint is reported as CC BY-NC-SA 4.0 and ESC-50 is noncommercial; do not assume this project can be monetized. Check sources and provenance before redistribution or commercial use. Uploaded screenshots and sample images are demonstration materials. The platform is a local research prototype, **not** a production cloud service with authentication or job scheduling.
+- [Research review and testable design implications](docs/research/relaxation_soundscape_research.md); [listening rating template](listening_ratings_template.csv).
+- [AudioLDM 2](https://huggingface.co/cvssp/audioldm2) weights are CC BY-NC-SA 4.0. [ESC-50](https://github.com/karolpiczak/ESC-50) is generally noncommercial; review individual attribution and licenses before use or redistribution.
+- Stable Audio Open is an unverified candidate with its own access and license terms. The optional comparison has not been run.
+- The scene model has six scene classes and no validated weather head. The LoRA checkpoint is not embedded in the notebook. GPU availability, live inference, cross-model quality and long-duration listening require further testing.
+- Athir authored the preserved original audio notebook and LoRA experiments; SoundScape AI contributors built the vision, integration and V2 evaluation work. See [AUDIO_NOTEBOOK_FINDINGS.md](AUDIO_NOTEBOOK_FINDINGS.md) for attribution and results.
