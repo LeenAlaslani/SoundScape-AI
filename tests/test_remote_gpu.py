@@ -20,3 +20,18 @@ def test_adapter_is_disabled_without_checkpoint(monkeypatch):
     monkeypatch.delenv('SOUNDSCAPE_REMOTE_ADAPTERS',raising=False)
     with pytest.raises(ValueError):
         generate_remote_wav('rain', 'comfort',10,42)
+
+
+def test_remote_receives_exact_prompt(monkeypatch):
+    from pathlib import Path
+    from app import remote_gpu
+    captured = []
+    class FakeClient:
+        def predict(self, prompt, *args, **kwargs):
+            captured.append(prompt)
+            return str(Path(__file__).resolve().parents[1] / 'assets/audio/comparisons/heavy_rain_original.wav')
+    monkeypatch.setenv('SOUNDSCAPE_GRADIO_SPACE','sample/soundscape-audio')
+    monkeypatch.setattr(remote_gpu, '_client', lambda *args: FakeClient())
+    prompt = '  soft rain with distant thunder  '
+    assert generate_remote_wav(prompt, 'original', 10, 42).startswith(b'RIFF')
+    assert captured == [prompt]

@@ -9,7 +9,7 @@ let intensity = 'gentle', preset = 'relax', generationAvailable = false, visionA
 let objectUrl = null, imageUrl = null, requestVersion = 0;
 const player = $('soundPlayer');
 let context = null, master = null, gains = {}, loadingMixer = false;
-let promptTimer=null, promptVersion=0;
+let promptTimer=null, promptVersion=0, promptReady=false, analysisVersion=0;
 
 function status(message, isError=false) { $('statusMessage').textContent=message; $('statusMessage').classList.toggle('error',isError); }
 async function api(path, options={}) {
@@ -60,6 +60,7 @@ function updateGains() {
 function invalidate() {
   requestVersion++;
   updateGains();
+  $('selectedSounds').textContent=Object.keys(names).filter(key=>(levels[key]||0)>0).map(key=>names[key]).join(' + ')||'None selected';
   schedulePrompt();
   if(player.hidden){$('player-title').textContent=description();$('previewOrigin').textContent='Live mix of saved layers · sound character adjusts volume';}
   else status('Preferences updated. Your generated recording is unchanged.');
@@ -70,12 +71,22 @@ function currentSettings() {
 }
 function schedulePrompt(){
   clearTimeout(promptTimer);const version=++promptVersion;
-  if(!Object.values(levels).some(value=>value>0)){$('promptDescription').textContent='Choose at least one sound.';return;}
+  promptReady=false;$('audioPrompt').value='';$('audioPrompt').readOnly=true;$('editPrompt').textContent='Edit prompt';
+  if(!Object.values(levels).some(value=>value>0)){$('audioPrompt').placeholder='Choose at least one sound.';return;}
+  $('audioPrompt').placeholder='Preparing your audio prompt…';
   promptTimer=setTimeout(async()=>{
-    try{const data=await (await api('compose',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(currentSettings())})).json();if(version===promptVersion)$('promptDescription').textContent=data.prompt;}
-    catch(error){if(version===promptVersion)$('promptDescription').textContent='Prompt unavailable.';}
+    try{const data=await (await api('compose',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(currentSettings())})).json();if(version===promptVersion){$('audioPrompt').value=data.prompt;promptReady=true;}}
+    catch(error){if(version===promptVersion)$('audioPrompt').placeholder='Prompt unavailable. Change a setting to retry.';}
   },200);
 }
+$('editPrompt').addEventListener('click',()=>{if(!promptReady){status('Wait for the audio prompt before editing.',true);return;}$('audioPrompt').readOnly=false;$('audioPrompt').focus();$('editPrompt').textContent='Editing';});
+$('audioPrompt').addEventListener('input',()=>{clearTimeout(promptTimer);promptVersion++;requestVersion++;promptReady=true;});
+$('copyPrompt').addEventListener('click',async()=>{
+  const value=$('audioPrompt').value;
+  if(!value){status('There is no prompt to copy yet.',true);return;}
+  try{await navigator.clipboard.writeText(value);status('Audio prompt copied.');}
+  catch(error){$('audioPrompt').focus();$('audioPrompt').select();status('Select and copy the prompt.');}
+});
 async function ensureMixer() {
   if(context)return;
   const AudioContextClass=window.AudioContext||window.webkitAudioContext;
@@ -126,24 +137,32 @@ $('downloadMix').addEventListener('click',async()=>{
 });
 async function analyzeFile(file) {
   if (!file || !['image/jpeg','image/png','image/webp'].includes(file.type) || file.size>8*1024*1024) { status('Choose a JPEG, PNG or WebP image under 8 MB.',true); return; }
-  const version=++requestVersion;
+  const version=++requestVersion, imageVersion=++analysisVersion;
+  clearTimeout(promptTimer);promptVersion++;promptReady=false;$('audioPrompt').value='';$('audioPrompt').placeholder='Analyzing your scene…';
+  $('detectedScene').textContent='Analyzing…';$('visualDescription').textContent='Waiting for the scene model.';
   if(imageUrl) URL.revokeObjectURL(imageUrl); imageUrl=URL.createObjectURL(file); $('imagePreview').src=imageUrl;
   $('imagePreview').alt='Your uploaded scene'; $('imageLabel').textContent='Your chosen place';
-  if(!visionAvailable){$('analysisResult').textContent='Scene analysis is unavailable. Choose an environment below.';return;}
+  $('imageSubtitle').textContent='Your image is ready';$('scenePrompt').open=true;
+  if(!visionAvailable){$('analysisResult').textContent='Scene analysis is unavailable. Choose an environment below.';$('detectedScene').textContent='Unavailable';$('visualDescription').textContent='No visual classification is available.';schedulePrompt();return;}
   status('Understanding your scene…');
   try {
     const form=new FormData();form.append('image',file);
     const result=await (await api('analyze',{method:'POST',body:form})).json();
-    if(version!==requestVersion)return;
+    if(imageVersion!==analysisVersion)return;
+    const raw=typeof result.raw_label==='string'?result.raw_label:'';
+    $('detectedScene').textContent=raw?raw.charAt(0).toUpperCase()+raw.slice(1):'Unavailable';
+    const score=typeof result.score==='number'?' (model score '+Math.round(result.score*100)+'%)':'';
+    $('visualDescription').textContent=raw?'The model predicted '+raw+score+'. This can be wrong; weather was not identified.':'The model did not return a scene label.';
+    if(version!==requestVersion){$('analysisResult').textContent='Scene analysis complete. Your current choices are unchanged.';return;}
     if(result.scene && result.scene!=='unknown' && result.accepted!==false) {
       $('sceneSelect').value=result.scene;
       const sound=sceneSound[result.scene]||'wind'; levels={[sound]:45}; renderLevels();
       if($('weatherSelect').value!=='none')$('weatherSelect').dispatchEvent(new Event('change'));
-      else { updateGains();schedulePrompt();if(player.hidden)$('player-title').textContent=description(); }
+      else { updateGains();$('selectedSounds').textContent=Object.keys(names).filter(key=>(levels[key]||0)>0).map(key=>names[key]).join(' + ')||'None selected';schedulePrompt();if(player.hidden)$('player-title').textContent=description(); }
       $('analysisResult').textContent='Suggested scene: '+result.scene+'. You can change it below.';
       status('Scene ready. Choose the atmosphere you want to hear.');
-    } else { $('sceneSelect').value='unknown'; $('analysisResult').textContent='Scene uncertain. Choose the closest environment below.'; status('Choose an environment to continue.'); }
-  } catch(error) { if(version===requestVersion){$('analysisResult').textContent='Scene analysis unavailable. Choose an environment below.';status(error.message,true);} }
+    } else { $('sceneSelect').value='unknown'; $('analysisResult').textContent='Scene uncertain. Choose the closest environment below.';schedulePrompt();status('Choose an environment to continue.'); }
+  } catch(error) { if(imageVersion===analysisVersion){$('analysisResult').textContent='Scene analysis unavailable. Choose an environment below.';$('detectedScene').textContent='Unavailable';$('visualDescription').textContent='No visual classification is available.';if(version===requestVersion)schedulePrompt();status(error.message,true);} }
 }
 $('imageInput').addEventListener('change', event=>void analyzeFile(event.target.files[0]));
 const drop=$('dropZone');
@@ -174,11 +193,12 @@ $('generateBtn').addEventListener('click',async()=>{
   if(!generationAvailable){await togglePreview();return;}
   const version=++requestVersion, button=$('generateBtn');
   if(!Object.values(levels).some(v=>v>0)){status('Choose at least one sound layer.',true);return;}
+  if(!promptReady || !$('audioPrompt').value.trim()){status('Wait for a valid audio prompt before generating.',true);return;}
   button.disabled=true; status(generationAvailable?'Creating your new soundscape…':'Preparing your preview from saved layers…');
   try {
     const settings=currentSettings();
-    const composed=await (await api('compose',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(settings)})).json();
-    const response=await api('generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:composed.prompt,adapter:$('adapterSelect').value,seconds:10,seed:Math.floor(Math.random()*4294967296)})});
+    const shownPrompt=$('audioPrompt').value;
+    const response=await api('generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:shownPrompt,adapter:$('adapterSelect').value,seconds:10,seed:Math.floor(Math.random()*4294967296)})});
     const blob=await response.blob(); if(version!==requestVersion)return;
     if(context && context.state==='running'){await context.suspend();$('previewPlay').setAttribute('aria-pressed','false');$('previewPlay').textContent='▶ Play live mix';}
     if(objectUrl)URL.revokeObjectURL(objectUrl); objectUrl=URL.createObjectURL(blob);

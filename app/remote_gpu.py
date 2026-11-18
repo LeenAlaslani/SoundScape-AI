@@ -56,7 +56,7 @@ def generate_remote_wav(prompt: str, adapter: str, seconds: int, seed: int) -> b
         raise ValueError('Prompt must contain 1–400 characters')
     try:
         result = _client(space, os.environ.get('HF_TOKEN', '')).predict(
-            prompt.strip(), adapter, int(seconds), int(seed), api_name='/generate_audio'
+            prompt, adapter, int(seconds), int(seed), api_name='/generate_audio'
         )
         # gr.Audio(type='filepath') returns a downloaded local filename via gradio_client.
         if isinstance(result, dict):
