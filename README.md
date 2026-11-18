@@ -13,9 +13,9 @@ Upload a scene, shape its atmosphere, and listen to a soundscape made for your m
 ## Create a soundscape
 
 1. Upload a nature photo or use the sample. The trained scene model suggests a scene; you can correct it.
-2. Choose Relax, Sleep, Focus or Nature, then adjust the rain, waves, wind, water and thunder layers. Weather is a user choice; the current model does not recognize weather.
-3. Review the visible scene prediction and audio prompt. Copy it or edit it before generating; changing the scene or sound settings refreshes the prompt and replaces edits. The exact displayed text is sent when new audio is requested.
-4. Play the saved-layer mix and adjust its sliders while listening. Download a 30-second WAV of the current mix. When a GPU service is configured, the creation button requests a new recording; it is distinct from the saved-layer mix.
+2. The scene suggestion and audio prompt appear directly below the image. Weather is not detected by the current model; use **Add rain** to request rain in one tap. Choose another environment, preset or sound mix in **Customize**.
+3. Copy or edit the prompt before generating; changing the scene or sound settings refreshes it and replaces edits. The exact displayed text is sent when new audio is requested.
+4. Select **Create Soundscape** to play the saved-layer preview and adjust its sliders while listening. Download a 30-second WAV. When a GPU service is configured, the creation button requests a new recording; it is distinct from the saved-layer mix.
 
 Comfort mode reduces preview gain and adds softer language to a new-generation prompt. Sound character adjusts preview volume rather than generating a different recording. Their perceptual effects have not been validated. Presets express listening preferences; they are not clinical claims. The Model Lab contains previously generated original and LoRA comparisons.
 
@@ -60,10 +60,12 @@ python -m pytest -q tests/test_audio_quality.py tests/test_audio_playback.py tes
 node --check frontend/app.js
 ```
 
+For the optional browser smoke test, install Playwright separately and its Chromium browser, start the local server on port 8765, and run `node tests/studio_smoke.cjs`. This test uses the bundled sample image and selects rain manually.
+
 ## Research, rights and limitations
 
 - [Research review and testable design implications](docs/research/relaxation_soundscape_research.md); [listening rating template](listening_ratings_template.csv).
 - [AudioLDM 2](https://huggingface.co/cvssp/audioldm2) weights are CC BY-NC-SA 4.0. [ESC-50](https://github.com/karolpiczak/ESC-50) is generally noncommercial; review individual attribution and licenses before use or redistribution.
 - Stable Audio Open is an unverified candidate with its own access and license terms. The optional comparison has not been run. See [GPU options](docs/architecture/gpu-options.md) for current cost and quota considerations.
-- The scene model has six scene classes and no validated weather head. A local smoke test predicted forest and sea for two supplied scenes, but predicted glacier for a desert image; treat all predictions as fallible and correct the scene when needed. The LoRA checkpoint is not embedded in the notebook. GPU availability, live inference, cross-model quality and long-duration listening require further testing.
+- The scene model has six scene classes and no validated weather head. A local smoke test predicted forest and sea for two supplied scenes, but predicted glacier for a desert image; treat all predictions as fallible and correct the scene when needed. See the [weather-model review](docs/research/weather-recognition.md). The LoRA checkpoint is not embedded in the notebook. GPU availability, live inference, cross-model quality and long-duration listening require further testing.
 - Athir authored the preserved original audio notebook and LoRA experiments; SoundScape AI contributors built the vision, integration and V2 evaluation work. See [AUDIO_NOTEBOOK_FINDINGS.md](AUDIO_NOTEBOOK_FINDINGS.md) for attribution and results.

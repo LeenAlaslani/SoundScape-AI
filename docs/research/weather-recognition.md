@@ -1,0 +1,7 @@
+# Weather recognition review
+
+The deployed MobileNetV3 classifier predicts scene classes, not weather. No trained and independently validated weather model is bundled, so the studio reports weather as unknown and allows a one-tap, explicitly user-chosen rain setting. This does not infer rain from forest or coast.
+
+[Weather-Image-Classification](https://huggingface.co/prithivMLmods/Weather-Image-Classification) is an Apache-2.0 SigLIP2 classifier with rain, snow, fog, cloud and clear classes. Its model card reports 0.759 rain recall on its evaluation set. [Weather Types Image Detection](https://huggingface.co/dima806/weather_types_image_detection) is another Apache-2.0 classifier whose card reports aggregate metrics for a different dataset. These are author-reported dataset results, not SoundScape validation. Neither model has been tested for calibration, deployment memory, or rain-on-forest and rain-on-coast performance here.
+
+Before enabling automatic detection, evaluate a source-disjoint, license-reviewed set of rainy and non-rainy forest/coast images, report per-class precision/recall and confidence calibration, and test the actual CPU deployment budget. Include difficult cases such as mist, waterfalls, wet roads and image overlays. A threshold should be selected on validation data and assessed on held-out data; uncertain predictions should remain unselected and users must be able to correct them. Do not treat a few example images as evidence of reliable generalization.
