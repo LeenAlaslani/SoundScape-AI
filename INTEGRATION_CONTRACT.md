@@ -1,5 +1,12 @@
 # Integration contract — for the audio teammate
 
+> V2 update: the historical proposal below predates the implemented `/api/generate`
+> and optional remote GPU bridge. The browser image workflow now composes an
+> artistic sound request, keeps its saved-layer preview, and requests a new WAV
+> when generation is configured. Configuration is not proof the remote service
+> is healthy. Scene inference does not infer weather or audible events. The
+> GPU service and full image-to-generated-WAV path remain unverified in V2.
+
 Vision, audio and frontend can be built in parallel if the following protocol stays stable.
 
 ## Vision → audio payload

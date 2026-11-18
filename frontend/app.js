@@ -11,6 +11,7 @@ const presets = {
 const layerNames={rain:'🌧 Rain',sea_waves:'◉ Waves',wind:'〰 Wind',pouring_water:'≋ Water',thunderstorm:'✧ Thunder'};
 let chosenImage = null;
 let visionEnabled = false;
+let generationEnabled = false;
 let intensity='gentle';
 let wavUrl=null;
 let imageFlowToken=0;
@@ -36,6 +37,9 @@ async function api(path,opts={}){
 }
 function clearPreviousPreview(){
   if(wavUrl){URL.revokeObjectURL(wavUrl);wavUrl=null;}
+  if(generatedURL){URL.revokeObjectURL(generatedURL);generatedURL=null;}
+  $('generatedPlayer').hidden=true;$('generatedPlayer').removeAttribute('src');$('generatedPlayer').load();
+  $('downloadGenerated').hidden=true;$('downloadGenerated').removeAttribute('href');
   $('mixPlayer').hidden=true;$('mixPlayer').removeAttribute('src');$('mixPlayer').load();
   $('downloadMix').hidden=true;$('downloadMix').removeAttribute('href');
   $('promptText').value='';
@@ -120,6 +124,20 @@ async function createImageSoundscape(){
     if(!await composeCurrentPrompt(token))return;
     updateStatus('Step 3/3 · Mixing your playable audio preview…');
     if(!await mixCurrentLayers(token))return;
+    if(generationEnabled){
+      updateStatus('Generating a new recording from the image-based prompt…');
+      const response=await api('generate',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({prompt:$('promptText').value,adapter:$('adapterSelect').value,
+                             seed:Number($('seedInput').value),seconds:10})});
+      const audio=await response.blob();
+      if(token!==imageFlowToken)return;
+      if(generatedURL)URL.revokeObjectURL(generatedURL);
+      generatedURL=URL.createObjectURL(audio);
+      $('generatedPlayer').src=generatedURL;$('generatedPlayer').hidden=false;
+      $('downloadGenerated').href=generatedURL;$('downloadGenerated').hidden=false;
+      updateStatus('New recording ready. The photo identifies the scene; weather and audible sounds were not detected.');
+      return;
+    }
     updateStatus('Ready: image → '+(sceneName[scene]||scene)+' → audio prompt → playable 30-second mix. For a NEW AI recording, connect a GPU and use Generate new sound.');
     $('mixPlayer').scrollIntoView({behavior:'smooth',block:'nearest'});
   }catch(err){
@@ -260,6 +278,7 @@ $('generateBtn').addEventListener('click',async()=>{
   try{
     const d=await(await api('status')).json();
     const g=d.generation||{};
+    generationEnabled=!!g.available;
     $('generateBtn').disabled=!g.available;
     if(g.available){
       $('generationHint').textContent=g.space_configured?'External GPU Space configured. It may queue requests, fail or reach daily limits; click Generate to test actual availability.':(g.adapter_checkpoint_present?'GPU ready; adapters available.':'GPU ready for original-model inference only.');
