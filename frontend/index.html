@@ -1,106 +1,64 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="theme-color" content="#f7f7f1" />
-  <title>SoundScape AI — Bring a scene to life</title>
-  <link rel="stylesheet" href="/static/styles.css?v=20261115-flow2" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f5f7f4">
+  <title>SoundScape AI | Your moment of calm</title>
+  <link rel="stylesheet" href="/static/styles.css?v=3">
+  <link rel="stylesheet" href="/static/mixer.css?v=2">
+  <script src="/static/app.js?v=5" defer></script>
 </head>
 <body>
-  <div class="shell">
-    <header class="header">
-      <a class="brand" href="/" aria-label="SoundScape AI home">
-        <span class="brand-glyph" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M4 19.5c4-8 8 8 12 0s8-8 12 0" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M4 12c4-8 8 8 12 0s8-8 12 0" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" opacity=".46"/></svg></span>
-        <span>soundscape<span class="brand-ai">AI</span></span>
-      </a>
-      <div class="nav-links"><span class="nav-current">Studio</span><a href="#how-it-works">How it works</a></div>
-      <div id="connection" class="connection"><span class="connection-dot"></span> Checking services</div>
-    </header>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="SoundScape AI home"><span class="brand-mark" aria-hidden="true">∿</span><span>soundscape <small>AI</small></span></a>
+    <nav aria-label="Main navigation"><a class="active" href="#studio">Studio</a><a href="#research">Model lab</a></nav>
+    <span class="connection" id="connection">Checking connection</span>
+  </header>
 
-    <main>
-      <section class="hero">
-        <div class="hero-copy">
-          <div class="eyebrow"><span class="eyebrow-icon">✳</span> THE SOUND OF YOUR IMAGINATION</div>
-          <h1>Every scene<br/>has a <em>sound.</em></h1>
-          <p>Turn a moment in nature into your own immersive soundscape. Upload a picture, shape the ambience, and make it yours.</p>
-          <a class="hero-cta" href="#studio">Open the studio <span aria-hidden="true">↗</span></a>
-        </div>
-        <div class="hero-art" aria-hidden="true">
-          <div class="landscape"><div class="sun"></div><div class="hill hill-back"></div><div class="hill hill-mid"></div><div class="hill hill-front"></div><div class="water-line"></div><div class="water-line w2"></div><div class="water-line w3"></div><div class="landscape-title">a little closer to nature</div></div>
-          <div class="floating-note note-a"><span>♫</span> slow down, stay a while</div>
-          <div class="floating-note note-b"><span>◌</span> gentle forest ambience</div>
-        </div>
+  <main id="studio" class="workspace">
+    <div class="intro"><div><p class="eyebrow">A LITTLE SPACE TO UNWIND</p><h1>Make room for calm.</h1><p>Bring a place to life, in your own way.</p></div><span class="intro-note">IMAGE TO SOUNDSCAPE <span aria-hidden="true">↗</span></span></div>
+
+    <div class="studio">
+      <section class="scene" aria-labelledby="scene-title">
+        <div class="section-head"><div><span class="section-number">01</span><h2 id="scene-title">Your scene</h2></div><span class="hint">Start with a photo</span></div>
+        <label class="image-frame" for="imageInput" id="dropZone">
+          <img id="imagePreview" src="/static/images/forest_sample.webp" alt="A sunlit forest path">
+          <span class="image-shade"></span>
+          <span class="image-caption"><span class="image-tag">YOUR VIEW</span><strong id="imageLabel">Find your somewhere.</strong><span id="imageSubtitle">Choose a photo to begin</span></span>
+          <span class="upload-chip">＋ <span>Upload photo</span></span>
+          <input id="imageInput" type="file" accept="image/jpeg,image/png,image/webp">
+        </label>
+        <div class="scene-summary"><div><span class="mini-label">SCENE</span><p id="analysisResult" aria-live="polite">Choose an image or explore the sample forest.</p></div><button id="useSampleBtn" class="text-button" type="button">Try the sample <span>↗</span></button></div>
+        <div class="scene-controls"><label>Environment<select id="sceneSelect"><option value="forest">Forest</option><option value="coast">Coast</option><option value="mountain">Mountain</option><option value="river">River</option><option value="waterfall">Waterfall</option><option value="lake">Lake</option><option value="desert">Desert</option><option value="unknown">Other nature scene</option></select></label><label>Weather <select id="weatherSelect"><option value="none">Not identified</option><option value="rain">Rain (chosen)</option><option value="snow">Snow (chosen)</option><option value="fog">Fog (chosen)</option><option value="wind">Wind (chosen)</option></select></label></div>
+        <p class="disclaimer">Weather is a personal choice, not detected from the image.</p>
       </section>
 
-      <section class="studio-section" id="studio">
-        <div class="section-heading"><div><div class="eyebrow small">YOUR CREATIVE SPACE</div><h2>Build your ambience.</h2><p>Upload a photo: scene detection, audio prompt and a playable preview happen automatically. Fine-tune every choice below.</p></div><div class="step-indicator">01 — 03 <span>STUDIO</span></div></div>
-
-        <div class="studio-grid">
-          <section class="panel upload-panel" aria-labelledby="image-title">
-            <div class="panel-title"><span class="step-bubble">01</span><div><h3 id="image-title">Start with a scene</h3><p>A single upload starts the image-to-sound flow</p></div></div>
-            <label id="dropZone" class="dropzone" for="imageInput">
-              <input id="imageInput" type="file" accept="image/jpeg,image/png,image/webp" hidden />
-              <img id="imagePreview" class="image-preview" alt="Selected landscape" hidden />
-              <span id="dropPlaceholder" class="drop-placeholder"><span class="upload-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/></svg></span><strong>Drop a photo here</strong><span>or click to explore your files</span><small>PNG, JPG or WebP · max 8 MB</small></span>
-              <span id="imageLabel" class="image-label" hidden>Change image ↗</span>
-            </label>
-            <button id="useSampleBtn" class="text-button sample-button" type="button">Try the example forest photo ↗</button>
-            <button id="analyzeBtn" class="button button-primary" disabled><span aria-hidden="true">✳</span> Rebuild from this image</button>
-            <div id="analysisResult" class="analysis-result" aria-live="polite"><span class="muted">After upload: image → scene → audio prompt → listenable preview.</span></div>
-          </section>
-
-          <section class="panel craft-panel" aria-labelledby="sound-title">
-            <div class="panel-title"><span class="step-bubble">02</span><div><h3 id="sound-title">Shape the sound</h3><p>Suggested settings appear automatically; adjust as you like</p></div></div>
-            <div class="form-block"><label for="sceneSelect">ENVIRONMENT</label><select id="sceneSelect"><option value="forest">Misty forest</option><option value="coast">Quiet coastline</option><option value="desert">Open desert</option><option value="river">Flowing river</option><option value="waterfall">Waterfall</option><option value="mountain">Mountain retreat</option><option value="lake">Calm lake</option><option value="unknown">Custom nature scene</option></select></div>
-            <div class="form-block"><label for="soundSelect">MAIN SOUND</label><select id="soundSelect"><option value="rain">Falling rain</option><option value="sea_waves">Ocean waves</option><option value="wind">Soft wind</option><option value="pouring_water">Flowing water</option><option value="thunderstorm">Distant thunder</option></select></div>
-            <div class="form-block"><label for="intensitySelect">SOUND CHARACTER</label><div class="segments" id="intensitySelect" role="group" aria-label="Sound character"><button class="segment active" data-intensity="gentle" aria-pressed="true">Gentle</button><button class="segment" data-intensity="moderate" aria-pressed="false">Natural</button><button class="segment" data-intensity="strong" aria-pressed="false">Bold</button></div></div>
-            <label class="switch-row" for="comfortMode"><span><strong>Comfort mode</strong><small>Softer ambience, fewer sudden sounds in the prompt</small></span><span class="switch"><input id="comfortMode" type="checkbox" checked /><span class="switch-slider"></span></span></label>
-            <button id="composeBtn" class="button button-primary"><span aria-hidden="true">✧</span> Create audio prompt</button>
-          </section>
-        </div>
-
-        <section class="panel output-panel" aria-labelledby="output-title"><div class="panel-title"><span class="step-bubble">03</span><div><h3 id="output-title">Your soundscape</h3><p>Your image creates a text prompt and preview mix automatically; new model generation needs GPU</p></div><span class="coming-tag" id="soundAvailability">5 RECORDED LAYERS</span></div>
-          <div class="output-grid"><div class="prompt-area"><div class="mini-label">AUDIO GENERATION PROMPT</div><textarea id="promptText" aria-label="Generated audio prompt" spellcheck="false" readonly placeholder="Your personalized audio prompt will appear here..."></textarea><div class="prompt-actions"><button class="text-button" id="copyBtn">Copy prompt ↗</button><span class="muted tiny">Choose an adapter below to request fresh GPU audio.</span></div></div>
-          <div class="mixer-area"><div class="mini-label">LIVE LAYER MIXER <span class="tiny muted">(volume only)</span></div><div id="mixerSliders"></div><p class="preview-origin" id="previewOrigin">Waiting for an image. Audio preview is a mix of previously generated WAV layers, not a fresh AudioLDM 2 sample.</p><div class="mix-actions"><button id="mixBtn" class="button button-outline">Refresh WAV preview mix <span>↗</span></button><audio id="mixPlayer" controls hidden></audio><a id="downloadMix" class="download-link" hidden download="soundscape_mix.wav">Download mixed WAV ↓</a></div></div></div>
-          <p id="statusMessage" class="status-msg" role="status">Upload a photo to automatically understand its scene, create its prompt and prepare a WAV preview.</p>
-        </section>
-        <section class="listening-section" aria-labelledby="listen-title">
-          <div class="section-heading listening-heading">
-            <div><div class="eyebrow small">REAL MODEL OUTPUTS</div><h2 id="listen-title">Listen to the nature.</h2><p>Five genuine AudioLDM 2 sound layers, extracted from Athir's executed notebook.</p></div>
-          </div>
-          <div id="layerCards" class="layer-card-grid"></div>
-          <div class="research-grid">
-            <section class="panel study-panel">
-              <div class="eyebrow small">A / B MODEL COMPARISON</div>
-              <h3>Hear the difference.</h3>
-              <p>Compare the original AudioLDM 2 with the two fine-tuned LoRA adapters on <strong>exactly the same prompt and seed</strong>. These WAVs were exported in Colab—not generated by this webpage.</p>
-              <label class="mini-label" for="comparisonSelect">EXAMPLE PROMPT</label>
-              <select id="comparisonSelect"><option value="heavy_rain">Heavy and strong rain</option><option value="rain_nice_sound">Rain nice sound</option></select>
-              <div id="comparisonPlayers" class="comparison-players"></div>
-              <p class="study-note">A lower denoising loss does not necessarily mean better control or a more relaxing sound. Listen and compare for yourself.</p>
-            </section>
-            <section class="panel study-panel generation-panel">
-              <div class="eyebrow small">OPTIONAL CUDA INFERENCE</div>
-              <h3>Create a new recording.</h3>
-              <p>New generation runs the pretrained model or your teammate's saved LoRA weights. It requires a CUDA GPU and the actual adapter checkpoint.</p>
-              <label class="mini-label" for="adapterSelect">MODEL</label>
-              <select id="adapterSelect"><option value="original">Original AudioLDM 2</option><option value="intensity">Fine-tuned: Intensity</option><option value="comfort">Fine-tuned: Comfort</option></select>
-              <label class="mini-label" for="seedInput">REPRODUCIBLE SEED</label>
-              <input id="seedInput" type="number" min="0" max="4294967295" value="42" />
-              <button id="generateBtn" class="button button-primary" disabled>Generate new 10-second sound ↗</button>
-              <audio id="generatedPlayer" controls hidden></audio>
-              <a id="downloadGenerated" class="download-link" hidden download="soundscape_generated.wav">Download generated WAV ↓</a>
-              <p id="generationHint" class="study-note">Checking whether CUDA inference is available...</p>
-            </section>
-          </div>
-        </section>
+      <section class="settings" aria-labelledby="settings-title">
+        <div class="section-head"><div><span class="section-number">02</span><h2 id="settings-title">Make it yours</h2></div><span class="hint">Set the mood</span></div>
+        <div class="setting-group"><span class="mini-label">CHOOSE YOUR MOMENT</span><div class="presets" role="group" aria-label="Listening preset"><button class="preset active" data-preset="relax" aria-pressed="true"><span>◌</span>Relax</button><button class="preset" data-preset="sleep" aria-pressed="false"><span>☾</span>Sleep</button><button class="preset" data-preset="focus" aria-pressed="false"><span>◉</span>Focus</button><button class="preset" data-preset="nature" aria-pressed="false"><span>✳</span>Nature</button></div></div>
+        <div class="setting-group"><div class="group-line"><span class="mini-label">SOUND LAYERS</span><span class="hint">Make it your own</span></div><div id="mixerSliders" class="sliders"></div></div>
+        <div class="setting-group character"><span class="mini-label">SOUND CHARACTER</span><div class="segments" role="group" aria-label="Sound character"><button class="segment active" data-intensity="gentle" aria-pressed="true">Gentle</button><button class="segment" data-intensity="moderate" aria-pressed="false">Balanced</button><button class="segment" data-intensity="strong" aria-pressed="false">Present</button></div></div>
+        <label class="comfort-row"><span><strong>Comfort mode</strong><small>Quieter layers and a softer generation prompt</small></span><input id="comfortMode" type="checkbox" checked><span class="switch" aria-hidden="true"></span></label>
+        <button id="generateBtn" class="primary" type="button">Create soundscape <span aria-hidden="true">↗</span></button>
+        <p id="generationHint" class="generation-hint">Checking generation availability…</p>
       </section>
+    </div>
 
-      <section class="how-section" id="how-it-works"><div class="eyebrow small">HOW IT COMES TO LIFE</div><h2>From image to atmosphere.</h2><div class="how-grid"><div><div class="how-icon">01 / SEE</div><h3>Understand the scene</h3><p>A vision model detects visual environments, with room for you to correct its guess.</p></div><div><div class="how-icon">02 / SHAPE</div><h3>Choose the feeling</h3><p>The photo suggests settings. You can change the sound, intensity and comfort mode anytime.</p></div><div><div class="how-icon">03 / LISTEN</div><h3>Bring it to life</h3><p>A saved-WAV preview is ready after analysis. To synthesize a completely new audio sample, a connected GPU service is required.</p></div></div></section>
-    </main>
-    <footer><span>soundscape AI <span class="footer-star">✳</span> made for slow moments</span><span>Vision-guided audio · Original and LoRA comparison</span></footer>
-  </div>
-  <script src="/static/app.js?v=20261115-flow2" defer></script>
+    <details id="scenePrompt" class="scene-prompt" open>
+      <summary><span><span class="mini-label">FROM IMAGE TO ATMOSPHERE</span><strong>Your Scene &amp; Audio Prompt</strong></span><span class="prompt-chevron" aria-hidden="true">⌄</span></summary>
+      <div class="scene-prompt-body">
+        <div class="prompt-facts"><div><span class="mini-label">DETECTED SCENE</span><p id="detectedScene">Awaiting image analysis</p></div><div><span class="mini-label">VISUAL DESCRIPTION</span><p id="visualDescription">No scene has been analyzed yet.</p></div><div><span class="mini-label">SELECTED SOUNDS</span><p id="selectedSounds">Rain + Wind</p></div></div>
+        <div class="prompt-heading"><label class="mini-label" for="audioPrompt">GENERATED AUDIO PROMPT</label><div class="prompt-actions"><button type="button" class="text-button" id="editPrompt">Edit prompt</button><button type="button" class="text-button" id="copyPrompt">Copy prompt</button></div></div>
+        <textarea id="audioPrompt" rows="4" maxlength="400" readonly aria-describedby="promptNote" placeholder="Your audio prompt will appear here."></textarea>
+        <p id="promptNote" class="prompt-note">Sound choices are yours; the scene model does not detect weather. Changing settings refreshes the prompt and replaces any edits.</p>
+      </div>
+    </details>
+    <section class="player-section" aria-labelledby="player-title"><div class="player-copy"><span class="player-icon" aria-hidden="true">♫</span><div><span class="mini-label">YOUR SOUNDSCAPE</span><h2 id="player-title">A moment just for you.</h2><p id="previewOrigin">Preview your chosen layers or generate a new recording.</p></div></div><div class="player-controls"><button id="previewPlay" class="preview-button" type="button" aria-pressed="false">▶ Play live mix</button><label class="volume-control">Volume <input id="previewVolume" type="range" min="0" max="100" value="70" aria-label="Preview volume"></label><audio id="soundPlayer" controls preload="metadata" aria-label="Generated soundscape player" hidden></audio><button id="downloadMix" class="download" type="button">Download mix ↓</button><a id="downloadSound" class="download" hidden download="soundscape.wav">Download generated WAV ↓</a></div></section>
+    <p id="statusMessage" class="status" role="status" aria-live="polite">Ready when you are.</p>
+
+    <details id="research" class="research"><summary>Model lab <span>＋</span></summary><div class="research-content"><p>Compare saved outputs from the original AudioLDM 2 model and Athir’s experimental LoRA adapters. These are earlier recordings, not new generations.</p><label for="comparisonSelect">Comparison prompt</label><select id="comparisonSelect"><option value="heavy_rain">Heavy and strong rain</option><option value="rain_nice_sound">Rain nice sound</option></select><div id="comparisonPlayers" class="comparisons"></div><label for="adapterSelect">Model for new generation</label><select id="adapterSelect"><option value="original">Original AudioLDM 2</option><option value="intensity" disabled>Intensity LoRA</option><option value="comfort" disabled>Comfort LoRA</option></select><p>Lower model loss does not establish better listening quality. Weather recognition and new generation require separately available models.</p></div></details>
+  </main>
+  <footer><span>soundscape AI <span aria-hidden="true">✳</span></span><span>Made for moments of quiet.</span></footer>
 </body>
 </html>
